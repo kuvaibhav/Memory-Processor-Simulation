@@ -11,7 +11,7 @@ export class ChartComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
-    let datum = [12, 34, 11, 20];
+    let datum = [12, 14, 11, 20];
     var myChart = new Chart("myChart", {
       type: 'bar',
       data: {
