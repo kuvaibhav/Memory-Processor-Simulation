@@ -123,6 +123,42 @@ def calculate_w0(no_of_processor, cycle):
     return w0
 
 
+def run_simulation_normal(no_of_processor, curr_memory):
+    generate_memory_requests(no_of_processor, curr_memory)
+    locality_of_reference_list = []
+    locality_of_reference_list = processor_request
+    max_cycles = 1000
+    cycle = 1
+    w0 = 0.0
+    w_prev = 0.0
+    w_diff = 0.0
+    is_w_stable = False
+    while cycle < max_cycles and not is_w_stable:
+        for i in range(0, no_of_processor):
+            if processor_access_counter_has_increased(i):
+                memory_requested_normal = int(random.gauss(locality_of_reference_list[i], curr_memory/6))
+                if memory_requested_normal > 0:
+                    processor_request[i] = memory_requested_normal
+                else:
+                    processor_request[i] = curr_memory + locality_of_reference_list[i] + memory_requested_normal
+                #print("Cycle number is {0} and current Memory Module is {1}".format(cycle, curr_memory))
+                #print(processor_request[i])
+        for memory in range(0, curr_memory):
+            processor_with_highest_priority = processor_with_highest_priority_for_a_memory(memory, no_of_processor)
+            if processor_with_highest_priority >= 0:
+                processor_access_counter[processor_with_highest_priority] = \
+                    processor_access_counter[processor_with_highest_priority] + 1
+        cycle_priorities()
+        cycle = cycle + 1
+        if all_processor_paired():
+            w_prev = w0
+            w0 = calculate_w0(no_of_processor, cycle)
+            w_diff = w0 - w_prev
+            is_w_stable = check_stability(w_diff, w_prev)
+            if is_w_stable:
+                print(w0)
+
+
 def start_simulation(no_of_processor, distribution_type):
     max_memory_module = 2048
     for curr_memory in range(1, max_memory_module):
@@ -142,6 +178,6 @@ if __name__ == "__main__":
     else:
         #no_of_processor = argv[0]
         #distribution_type = argv[1]
-        no_of_processor = 20
-        distribution_type = 'u'
+        no_of_processor = 128
+        distribution_type = 'n'
         start_simulation(no_of_processor, distribution_type)
