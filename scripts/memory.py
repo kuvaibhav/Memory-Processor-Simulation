@@ -31,16 +31,22 @@ def init_processor_array(no_of_processor):
 
 
 def generate_random_memory_requests(current_number_memory_cycles):
+    """
+    The method randomly generates next memory module for a processor.
+    :param current_number_memory_cycles: The current number of memory module
+    :return: random generated Integer value which will be the next memory module for the processor
+    """
     return random.randint(1, current_number_memory_cycles)
 
 
 def generate_memory_requests(no_of_processor, current_memory):
+    """
+    Iterate through list of processors and randomly assign memory modules to be requested from.
+    :param no_of_processor: Number of processors given by the user.
+    :param current_memory: Current number of memory modules
+    """
     for i in range(0, no_of_processor):
         processor_request[i] = generate_random_memory_requests(current_memory)
-
-
-def run_simulation_normal(no_of_processor, curr_memory):
-    print("")
 
 
 def processor_with_highest_priority_for_a_memory(memory_module, no_of_processor):
@@ -60,22 +66,43 @@ def processor_with_highest_priority_for_a_memory(memory_module, no_of_processor)
 
 
 def processor_access_counter_has_increased(index):
+    """
+    :param index: takes the index of the processor
+    :return: boolean value indicating if access counter for a processor was increased from last time. If increased this
+    processor will be assigned a new memory module for requesting access.
+    """
     if processor_access_counter[index] > processor_access_counter[index-1]:
         return True
     return False
 
 
 def cycle_priorities():
+    """
+    Memory Access Scheme to avoid starvation.
+    A priority scheme is implemented which will keep rotating the priority of processors.
+    """
     global processor_priority
     x = []
     processor_priority = processor_priority[1:] + processor_priority[:1]
 
 
 def all_processor_paired():
+    """
+    Checks for presence of 0 in processor_access_counter array. If 0 is found then all processors have not yet
+    been paired. In other words we need to wait for more cycles to occur before we can start calculating
+    the arithmetic average W'(Sc(p, m, d))
+    :return: boolean value indicating if all processors got atleast one time access to a memory module
+    """
     return 0 not in processor_access_counter
 
 
 def run_simulation_uniform(no_of_processor, curr_memory):
+    """
+    Uniform Distribution
+    This method is responsible for calculating the Average System Memory Access Time. It is being denoted here with w0.
+    :param no_of_processor: Number of processors entered by the user.
+    :param curr_memory: Number of Memory Modules for which current simulation is carried
+    """
     generate_memory_requests(no_of_processor, curr_memory)
     max_cycles = 1000
     cycle = 1
@@ -100,10 +127,16 @@ def run_simulation_uniform(no_of_processor, curr_memory):
             w_diff = w0 - w_prev
             is_w_stable = check_stability(w_diff, w_prev)
             if is_w_stable:
-                print(w0)
+                print("%.4f" % w0)
 
 
 def check_stability(w_diff, w_prev):
+    """
+    The method take Tolerance value of 1% to determine the stability of the system.
+    :param w_diff: Difference between time cumulative average of recent two values
+    :param w_prev: Last Value of w0
+    :return: boolean value indicating if simulation has stabilized.
+    """
     if w_diff < w_prev*0.01:
         return True
     else:
@@ -111,6 +144,12 @@ def check_stability(w_diff, w_prev):
 
 
 def calculate_w0(no_of_processor, cycle):
+    """
+    The method calculates the value of w0.
+    :param no_of_processor: Number of processors as entered by user
+    :param cycle: Current cycle number
+    :return: Arithmetic average of all processors' time cumulative average.
+    """
     w0 = 0.0
     sum = 0.0
     processor_w = []
@@ -124,6 +163,12 @@ def calculate_w0(no_of_processor, cycle):
 
 
 def run_simulation_normal(no_of_processor, curr_memory):
+    """
+    Normal Distribution
+    This method is responsible for calculating the Average System Memory Access Time. It is being denoted here with w0.
+    :param no_of_processor: Number of processors entered by the user.
+    :param curr_memory: Numnber of Memory Modules for which current simulation is carried
+    """
     generate_memory_requests(no_of_processor, curr_memory)
     locality_of_reference_list = []
     locality_of_reference_list = processor_request
@@ -141,8 +186,6 @@ def run_simulation_normal(no_of_processor, curr_memory):
                     processor_request[i] = memory_requested_normal
                 else:
                     processor_request[i] = curr_memory + locality_of_reference_list[i] + memory_requested_normal
-                #print("Cycle number is {0} and current Memory Module is {1}".format(cycle, curr_memory))
-                #print(processor_request[i])
         for memory in range(0, curr_memory):
             processor_with_highest_priority = processor_with_highest_priority_for_a_memory(memory, no_of_processor)
             if processor_with_highest_priority >= 0:
@@ -156,10 +199,15 @@ def run_simulation_normal(no_of_processor, curr_memory):
             w_diff = w0 - w_prev
             is_w_stable = check_stability(w_diff, w_prev)
             if is_w_stable:
-                print(w0)
+                print("%.4f" % w0)
 
 
 def start_simulation(no_of_processor, distribution_type):
+    """
+    This is the driver method to perform the simulation using uniform or normal distribution.
+    :param no_of_processor: Number of processors as entered by the user
+    :param distribution_type: Distribution type can be Uniform ('u') or Normal ('n')
+    """
     max_memory_module = 2048
     for curr_memory in range(1, max_memory_module):
         init_processor_array(no_of_processor)
@@ -174,10 +222,10 @@ def start_simulation(no_of_processor, distribution_type):
 if __name__ == "__main__":
     a = sys.argv[0]
     if len(argv) < 2:
-        print("Please enter number of processors and distribution type as command line arguments")
+        print("Please enter number of processors and distribution type as command line arguments. "
+              "E.g <python_script_name> 100 'u'")
     else:
-        #no_of_processor = argv[0]
-        #distribution_type = argv[1]
-        no_of_processor = 128
-        distribution_type = 'n'
+        no_of_processor = int(argv[1])
+        no_of_processor = 64
+        distribution_type = argv[2]
         start_simulation(no_of_processor, distribution_type)
